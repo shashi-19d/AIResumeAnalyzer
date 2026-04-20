@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AIResumeAnalyzer.API/AIResumeAnalyzer.API.csproj" />
+    <Project Path="src/AIResumeAnalyzer.Application/AIResumeAnalyzer.Application.csproj" />
+    <Project Path="src/AIResumeAnalyzer.Domain/AIResumeAnalyzer.Domain.csproj" />
+    <Project Path="src/AIResumeAnalyzer.Infrastructure/AIResumeAnalyzer.Infrastructure.csproj" />
+  </Folder>
+</Solution>
