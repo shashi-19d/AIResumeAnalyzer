@@ -6,14 +6,16 @@ public class AnalysisService : IAnalysisService
 {
     private readonly IAnalysisRepository _repository;
 
-    public AnalysisService(IAnalysisRepository repository)
+    private readonly IAIService _aiService;
+
+    public AnalysisService(IAnalysisRepository repository, IAIService aiService)
     {
         _repository = repository;
+        _aiService = aiService;
     }
 
     public async Task<AnalyzeResponseDto> AnalyzeAsync(AnalyzeRequestDto request)
     {
-        // Save Resume
         var resume = new Resume
         {
             Content = request.ResumeContent
@@ -21,7 +23,6 @@ public class AnalysisService : IAnalysisService
 
         await _repository.AddResumeAsync(resume);
 
-        // Save Job Description
         var job = new JobDescription
         {
             Content = request.JobDescriptionContent
@@ -31,11 +32,12 @@ public class AnalysisService : IAnalysisService
 
         await _repository.SaveChangesAsync();
 
-        // Dummy response (AI will come later)
+        var aiResponse = await _aiService.AnalyzeAsync(request.ResumeContent, request.JobDescriptionContent);
+
         return new AnalyzeResponseDto
         {
             MatchScore = 0,
-            MissingSkills = new List<string>(),
+            MissingSkills = new List<string> { aiResponse },
             Suggestions = new List<string>()
         };
     }
