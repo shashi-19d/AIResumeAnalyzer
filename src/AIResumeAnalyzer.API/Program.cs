@@ -1,5 +1,7 @@
 using AIResumeAnalyzer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using AIResumeAnalyzer.Application.Features.Analysis.Services;
+using AIResumeAnalyzer.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 var app = builder.Build();
 
