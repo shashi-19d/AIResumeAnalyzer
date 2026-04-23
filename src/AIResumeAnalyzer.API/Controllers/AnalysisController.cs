@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AIResumeAnalyzer.Application.Features.Analysis.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AIResumeAnalyzer.API.Controllers;
 
@@ -13,8 +14,8 @@ public class AnalysisController : ControllerBase
         _service = service;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Analyze(AnalyzeRequestDto request)
+    [HttpPost("analyze")]
+    public async Task<IActionResult> Analyze([FromBody] AnalyzeRequestDto request)
     {
         var result = await _service.AnalyzeAsync(request);
         return Ok(result);
