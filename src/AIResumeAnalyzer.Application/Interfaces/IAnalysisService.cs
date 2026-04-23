@@ -1,4 +1,4 @@
 ﻿public interface IAnalysisService
 {
-    Task<AnalyzeResponseDto> AnalyzeAsync(AnalyzeRequestDto request);
+    Task<AnalysisResultDto> AnalyzeAsync(AnalyzeRequestDto request);
 }

@@ -1,4 +1,5 @@
 ﻿using AIResumeAnalyzer.Domain.Entities;
+using System.Text.Json;
 
 namespace AIResumeAnalyzer.Application.Features.Analysis.Services;
 
@@ -14,7 +15,7 @@ public class AnalysisService : IAnalysisService
         _aiService = aiService;
     }
 
-    public async Task<AnalyzeResponseDto> AnalyzeAsync(AnalyzeRequestDto request)
+    public async Task<AnalysisResultDto> AnalyzeAsync(AnalyzeRequestDto request)
     {
         var resume = new Resume
         {
@@ -32,13 +33,34 @@ public class AnalysisService : IAnalysisService
 
         await _repository.SaveChangesAsync();
 
-        var aiResponse = await _aiService.AnalyzeAsync(request.ResumeContent, request.JobDescriptionContent);
+        var aiResponse = await _aiService.AnalyzeAsync(
+            request.ResumeContent,
+            request.JobDescriptionContent);
 
-        return new AnalyzeResponseDto
+        Console.WriteLine("RAW AI RESPONSE:");
+        Console.WriteLine(aiResponse);
+
+        AnalysisResultDto result;
+
+        try
         {
-            MatchScore = 0,
-            MissingSkills = new List<string> { aiResponse },
-            Suggestions = new List<string>()
-        };
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse, options);
+        }
+        catch
+        {
+            result = new AnalysisResultDto
+            {
+                SkillsMatch = new List<string>(),
+                MissingSkills = new List<string> { "AI parsing failed" },
+                Suggestions = new List<string> { aiResponse }
+            };
+        }
+
+        return result;
     }
 }

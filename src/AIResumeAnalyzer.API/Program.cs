@@ -16,7 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
-builder.Services.AddScoped<IAIService, HuggingFaceService>();
+builder.Services.AddScoped<IAIService, GroqService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 var app = builder.Build();
