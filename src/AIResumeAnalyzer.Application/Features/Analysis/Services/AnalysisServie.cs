@@ -1,22 +1,34 @@
 ﻿using AIResumeAnalyzer.Domain.Entities;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AIResumeAnalyzer.Application.Features.Analysis.Services;
 
 public class AnalysisService : IAnalysisService
 {
     private readonly IAnalysisRepository _repository;
-
     private readonly IAIService _aiService;
+    private readonly IMemoryCache _cache;
 
-    public AnalysisService(IAnalysisRepository repository, IAIService aiService)
+    public AnalysisService(
+        IAnalysisRepository repository,
+        IAIService aiService,
+        IMemoryCache cache)
     {
         _repository = repository;
         _aiService = aiService;
+        _cache = cache;
     }
 
     public async Task<AnalysisResultDto> AnalyzeAsync(AnalyzeRequestDto request)
     {
+        var cacheKey = $"analysis_{request.ResumeContent}_{request.JobDescriptionContent}";
+
+        if (_cache.TryGetValue(cacheKey, out AnalysisResultDto cachedResult))
+        {
+            return cachedResult;
+        }
+
         var resume = new Resume
         {
             Content = request.ResumeContent
@@ -37,29 +49,10 @@ public class AnalysisService : IAnalysisService
             request.ResumeContent,
             request.JobDescriptionContent);
 
-        Console.WriteLine("RAW AI RESPONSE:");
-        Console.WriteLine(aiResponse);
+        var result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse)
+                     ?? new AnalysisResultDto();
 
-        AnalysisResultDto result;
-
-        try
-        {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse, options);
-        }
-        catch
-        {
-            result = new AnalysisResultDto
-            {
-                SkillsMatch = new List<string>(),
-                MissingSkills = new List<string> { "AI parsing failed" },
-                Suggestions = new List<string> { aiResponse }
-            };
-        }
+        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
         return result;
     }

@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AIResumeAnalyzer.Domain\AIResumeAnalyzer.Domain.csproj" />
   </ItemGroup>
 

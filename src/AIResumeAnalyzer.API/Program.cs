@@ -19,6 +19,8 @@ builder.Services.AddScoped<IAnalysisRepository, AnalysisRepository>();
 builder.Services.AddScoped<IAIService, GroqService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
+builder.Services.AddMemoryCache();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
