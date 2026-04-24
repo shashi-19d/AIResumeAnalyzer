@@ -82,19 +82,27 @@ public class GroqService : IAIService
 
     private string ExtractJson(string text)
     {
-        var start = text.IndexOf('{');
-        var end = text.LastIndexOf('}');
-
-        if (start >= 0 && end > start)
+        try
         {
-            var json = text.Substring(start, end - start + 1);
+            var start = text.IndexOf('{');
+            var end = text.LastIndexOf('}');
 
-            Console.WriteLine("EXTRACTED JSON:");
-            Console.WriteLine(json);
+            if (start >= 0 && end > start)
+            {
+                var json = text.Substring(start, end - start + 1);
 
-            return json;
+                // Validate JSON
+                JsonDocument.Parse(json);
+
+                return json;
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Invalid JSON from AI:");
+            Console.WriteLine(text);
         }
 
-        throw new Exception("AI did not return valid JSON");
+        return "{}";
     }
 }

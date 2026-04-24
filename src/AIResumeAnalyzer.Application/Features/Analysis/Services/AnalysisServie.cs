@@ -49,8 +49,15 @@ public class AnalysisService : IAnalysisService
             request.ResumeContent,
             request.JobDescriptionContent);
 
-        var result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse)
-                     ?? new AnalysisResultDto();
+        Console.WriteLine("AI RESPONSE:");
+        Console.WriteLine(aiResponse);
+
+        var result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse,
+            new JsonSerializerOptions
+            {
+               PropertyNameCaseInsensitive = true
+            })
+            ?? new AnalysisResultDto();
 
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
