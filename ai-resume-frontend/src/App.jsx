@@ -7,6 +7,9 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // 🔥 NEW STATES
+  const [file, setFile] = useState(null);
+
   // 🔥 Score Calculation
   const calculateScore = (match = [], missing = []) => {
     const total = match.length + missing.length;
@@ -24,7 +27,7 @@ function App() {
     ? calculateScore(result.skillsMatch, result.missingSkills)
     : 0;
 
-  // 🚀 API Call
+  // 🚀 ANALYZE API
   const analyze = async () => {
     if (!resume || !job) {
       alert("Please enter both fields");
@@ -52,6 +55,36 @@ function App() {
     }
   };
 
+  // 🚀 UPLOAD + PARSE PDF
+  const uploadResume = async (selectedFile) => {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setUploading(true);
+
+    try {
+      const response = await axios.post(
+        "https://localhost:44330/api/Analysis/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      // 🔥 AUTO FILL RESUME
+      setResume(response.data.content);
+    } catch (error) {
+      console.error(error);
+      alert("Resume upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center p-6">
 
@@ -67,12 +100,32 @@ function App() {
         </h1>
 
         <p className="text-gray-300 text-center mb-6">
-          Match your resume with job descriptions using AI
+          Upload your resume or paste content and match with job description
         </p>
+
+        {/* 📂 FILE UPLOAD */}
+        <div className="mb-4">
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => {
+              const selectedFile = e.target.files[0];
+              setFile(selectedFile);
+              uploadResume(selectedFile);
+            }}
+            className="text-white"
+          />
+
+          {uploading && (
+            <p className="text-blue-400 text-sm mt-2 animate-pulse">
+              Parsing resume...
+            </p>
+          )}
+        </div>
 
         {/* Resume Input */}
         <textarea
-          placeholder="Paste your resume..."
+          placeholder="Or paste your resume..."
           value={resume}
           onChange={(e) => setResume(e.target.value)}
           className="w-full h-32 p-4 mb-4 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -86,20 +139,21 @@ function App() {
           className="w-full h-32 p-4 mb-6 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
 
-        {/* 🔥 Button with UX states */}
+        {/* 🔥 Analyze Button */}
         <button
           onClick={analyze}
           disabled={loading}
           className={`w-full py-3 rounded-lg text-white font-semibold text-lg transition-all duration-300
-            ${loading
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-500 to-purple-600 hover:scale-105 active:scale-95"
+            ${
+              loading
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-500 to-purple-600 hover:scale-105 active:scale-95"
             }`}
         >
           {loading ? "Analyzing..." : "Analyze Now"}
         </button>
 
-        {/* ⏳ Loading Feedback */}
+        {/* ⏳ AI Loading */}
         {loading && (
           <p className="text-center text-gray-400 mt-4 animate-pulse">
             AI is analyzing your resume...
@@ -110,23 +164,13 @@ function App() {
         {result && (
           <div className="mt-8 text-white space-y-6 animate-fadeIn">
 
-            {/* 🔥 SCORE (Animated + Glow) */}
+            {/* 🔥 SCORE */}
             <div className="flex flex-col items-center mb-6 animate-scaleIn">
               <div className="relative w-32 h-32">
 
                 <svg className="transform -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" stroke="#374151" strokeWidth="10" fill="transparent" />
 
-                  {/* Background Circle */}
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="50"
-                    stroke="#374151"
-                    strokeWidth="10"
-                    fill="transparent"
-                  />
-
-                  {/* Progress Circle */}
                   <circle
                     cx="60"
                     cy="60"
@@ -137,9 +181,6 @@ function App() {
                     strokeDasharray="314"
                     strokeDashoffset={314 - (314 * score) / 100}
                     className="transition-all duration-1000 ease-out"
-                    style={{
-                      filter: "drop-shadow(0 0 6px rgba(168,85,247,0.6))"
-                    }}
                   />
 
                   <defs>
@@ -150,7 +191,6 @@ function App() {
                   </defs>
                 </svg>
 
-                {/* Score Text */}
                 <div className={`absolute inset-0 flex items-center justify-center text-2xl font-bold ${getScoreColor(score)}`}>
                   {score}%
                 </div>
@@ -159,40 +199,34 @@ function App() {
               <p className="text-gray-400 mt-2">Match Score</p>
             </div>
 
-            {/* ✅ Skills Match */}
-            <div className="animate-fadeIn" style={{ animationDelay: "0.2s" }}>
+            {/* Skills Match */}
+            <div>
               <h2 className="text-xl font-semibold mb-2">✅ Skills Match</h2>
               <div className="flex flex-wrap gap-2">
                 {result.skillsMatch?.map((s, i) => (
-                  <span
-                    key={i}
-                    className="bg-green-500/20 border border-green-400/30 text-green-300 px-4 py-1 rounded-full backdrop-blur-md hover:scale-110 hover:shadow-lg transition-all duration-200"
-                  >
+                  <span key={i} className="bg-green-500/20 px-3 py-1 rounded-full">
                     {s}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* ❌ Missing Skills */}
-            <div className="animate-fadeIn" style={{ animationDelay: "0.4s" }}>
+            {/* Missing Skills */}
+            <div>
               <h2 className="text-xl font-semibold mb-2">❌ Missing Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {result.missingSkills?.map((s, i) => (
-                  <span
-                    key={i}
-                    className="bg-red-500/20 border border-red-400/30 text-red-300 px-4 py-1 rounded-full backdrop-blur-md hover:scale-110 hover:shadow-lg transition-all duration-200"
-                  >
+                  <span key={i} className="bg-red-500/20 px-3 py-1 rounded-full">
                     {s}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* 💡 Suggestions */}
-            <div className="animate-fadeIn" style={{ animationDelay: "0.6s" }}>
+            {/* Suggestions */}
+            <div>
               <h2 className="text-xl font-semibold mb-2">💡 Suggestions</h2>
-              <ul className="list-disc ml-6 text-gray-300 space-y-2">
+              <ul className="list-disc ml-6 text-gray-300">
                 {result.suggestions?.map((s, i) => (
                   <li key={i}>{s}</li>
                 ))}
@@ -201,7 +235,6 @@ function App() {
 
           </div>
         )}
-
       </div>
     </div>
   );
