@@ -1,8 +1,9 @@
-using AIResumeAnalyzer.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using AIResumeAnalyzer.Application.Features.Analysis.Services;
-using AIResumeAnalyzer.Infrastructure.Repositories;
 using AIResumeAnalyzer.Infrastructure.AI;
+using AIResumeAnalyzer.Infrastructure.Data;
+using AIResumeAnalyzer.Infrastructure.Parsing;
+using AIResumeAnalyzer.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,8 @@ builder.Services.AddScoped<IAIService, GroqService>();
 builder.Services.AddScoped<IAnalysisService, AnalysisService>();
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<ResumeParserService>();
 
 builder.Services.AddCors(options =>
 {
