@@ -9,6 +9,7 @@ function App() {
 
   // 🔥 NEW STATES
   const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   // 🔥 Score Calculation
   const calculateScore = (match = [], missing = []) => {
