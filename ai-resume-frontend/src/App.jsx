@@ -11,6 +11,15 @@ function App() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  const cleanJobDescription = (text) => {
+    return text
+      .replace(/About the job/gi, "")
+      .replace(/Apply now/gi, "")
+      .replace(/\n+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   // 🔥 Score Calculation
   const calculateScore = (match = [], missing = []) => {
     const total = match.length + missing.length;
@@ -105,40 +114,60 @@ function App() {
         </p>
 
         {/* 📂 FILE UPLOAD */}
-        <div className="mb-4">
+        <div className="mb-6">
+
+          {/* Hidden input */}
           <input
+            id="fileUpload"
             type="file"
             accept=".pdf"
+            className="hidden"
             onChange={(e) => {
               const selectedFile = e.target.files[0];
-              setFile(selectedFile);
-              uploadResume(selectedFile);
+              if (selectedFile) {
+                setFile(selectedFile);
+                uploadResume(selectedFile);
+              }
             }}
-            className="text-white"
           />
 
+          {/* Custom Button */}
+          <label
+            htmlFor="fileUpload"
+            className="cursor-pointer flex items-center justify-center gap-3 px-4 py-3 rounded-lg 
+               bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 
+               transition-all duration-300"
+          >
+            📂 Upload Resume (PDF)
+          </label>
+
+          {/* Selected File Name */}
+          {file && (
+            <p className="text-sm text-green-400 mt-2">
+              ✅ {file.name}
+            </p>
+          )}
+
+          {/* Uploading State */}
           {uploading && (
-            <p className="text-blue-400 text-sm mt-2 animate-pulse">
+            <p className="text-blue-400 mt-2 animate-pulse">
               Parsing resume...
             </p>
           )}
-        </div>
 
-        {/* Resume Input */}
-        <textarea
-          placeholder="Or paste your resume..."
-          value={resume}
-          onChange={(e) => setResume(e.target.value)}
-          className="w-full h-32 p-4 mb-4 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        </div>
 
         {/* Job Input */}
         <textarea
           placeholder="Paste job description..."
           value={job}
-          onChange={(e) => setJob(e.target.value)}
+          onChange={(e) => setJob(cleanJobDescription(e.target.value))}
           className="w-full h-32 p-4 mb-6 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
+
+        <p className="text-xs text-gray-400 mt-1">
+          💡 Paste job description from LinkedIn or company site — we clean it automatically
+        </p>
 
         {/* 🔥 Analyze Button */}
         <button
