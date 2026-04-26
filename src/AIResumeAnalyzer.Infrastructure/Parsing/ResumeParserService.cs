@@ -22,6 +22,11 @@ public class ResumeParserService
             }
         }
 
-        return text.ToString();
+        return text.ToString()
+                   .Replace("\n", " ")
+                   .Replace("\r", " ")
+                   .Replace("  ", " ")
+                   .Trim();
+
     }
 }

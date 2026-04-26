@@ -88,25 +88,22 @@ public class GroqService : IAIService
 
     private string ExtractJson(string text)
     {
-        try
+        if (string.IsNullOrEmpty(text))
+            return "{}";
+
+        var start = text.IndexOf('{');
+        var end = text.LastIndexOf('}');
+
+        if (start >= 0 && end > start)
         {
-            var start = text.IndexOf('{');
-            var end = text.LastIndexOf('}');
+            var json = text.Substring(start, end - start + 1);
 
-            if (start >= 0 && end > start)
-            {
-                var json = text.Substring(start, end - start + 1);
+            // Remove markdown if present
+            json = json.Replace("```json", "")
+                       .Replace("```", "")
+                       .Trim();
 
-                // Validate JSON
-                JsonDocument.Parse(json);
-
-                return json;
-            }
-        }
-        catch
-        {
-            Console.WriteLine("Invalid JSON from AI:");
-            Console.WriteLine(text);
+            return json;
         }
 
         return "{}";
