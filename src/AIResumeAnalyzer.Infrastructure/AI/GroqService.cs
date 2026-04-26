@@ -18,7 +18,8 @@ public class GroqService : IAIService
 
     public async Task<string> AnalyzeAsync(string resume, string jobDescription)
     {
-        var prompt = $@"Act as an expert Technical Recruiter and ATS Optimization Engine.                
+        var prompt = $@"You are a strict JSON API. Analyze the resume and job description. Return ONLY valid JSON. No explanation. No markdown.
+                        Also acting as an expert Technical Recruiter and ATS Optimization Engine follow below instructions.              
                         Task: Conduct a high-fidelity gap analysis between the provided Resume and Job Description (JD).               
                         Constraints:                           
                                     1. Extraction: Identify 'skillsMatch' based on exact and semantic overlaps.                        
@@ -29,7 +30,12 @@ public class GroqService : IAIService
                               {{ ""skillsMatch"": [""list"", ""matched"", ""skills""],                   
                                  ""missingSkills"": [""list"", ""missing"", ""critical"", ""skills""],            
                                  ""suggestions"": [""actionable"", ""strategic"", ""advice""]                    
-                              }}               
+                              }}  
+                        Rules:
+                              - Extract technical skills only
+                             - Remove duplicates
+                             - Minimum 3 items per list if possible
+                             - Keep responses concise
                         Resume Content: {resume}
                         Job Description:{jobDescription}";
 
