@@ -52,12 +52,28 @@ public class AnalysisService : IAnalysisService
         Console.WriteLine("AI RESPONSE:");
         Console.WriteLine(aiResponse);
 
-        var result = JsonSerializer.Deserialize<AnalysisResultDto>(aiResponse,
-            new JsonSerializerOptions
+        AnalysisResultDto result;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<AnalysisResultDto>(
+                aiResponse,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            ) ?? new AnalysisResultDto();
+        }
+        catch
+        {
+            result = new AnalysisResultDto
             {
-               PropertyNameCaseInsensitive = true
-            })
-            ?? new AnalysisResultDto();
+                Suggestions = new List<string>
+        {
+            "AI response parsing failed. Try again with shorter input."
+        }
+            };
+        }
 
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
