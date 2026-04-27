@@ -10,4 +10,16 @@ public class AnalysisResultDto
 
     [JsonPropertyName("suggestions")]
     public List<string> Suggestions { get; set; } = new();
+
+    public int OverallScore { get; set; }
+
+    public ScoreBreakdown Breakdown { get; set; } = new();
+
+    public class ScoreBreakdown
+    {
+        public int SkillsScore { get; set; }
+        public int MissingPenalty { get; set; }
+        public int KeywordScore { get; set; }
+        public int QualityScore { get; set; }
+    }
 }

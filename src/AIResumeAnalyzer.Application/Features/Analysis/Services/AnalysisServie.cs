@@ -9,15 +9,14 @@ public class AnalysisService : IAnalysisService
     private readonly IAnalysisRepository _repository;
     private readonly IAIService _aiService;
     private readonly IMemoryCache _cache;
+    private readonly ScoringService _scoringService;
 
-    public AnalysisService(
-        IAnalysisRepository repository,
-        IAIService aiService,
-        IMemoryCache cache)
+    public AnalysisService(IAnalysisRepository repository, IAIService aiService, IMemoryCache cache, ScoringService scoringService)
     {
         _repository = repository;
         _aiService = aiService;
         _cache = cache;
+        _scoringService = scoringService;
     }
 
     public async Task<AnalysisResultDto> AnalyzeAsync(AnalyzeRequestDto request)
