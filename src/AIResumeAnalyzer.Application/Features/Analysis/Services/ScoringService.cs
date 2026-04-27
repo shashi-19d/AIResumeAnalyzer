@@ -21,7 +21,7 @@ public class ScoringService
             : (int)((double)match.Count / totalSkills * 100);
 
 
-        int missingPenalty = Math.Max(0, 100 - (missing.Count * 10));
+        int experienceScore = Math.Max(0, 100 - (missing.Count * 10));
 
 
         int keywordScore = CalculateKeywordScore(match, resumeText);
@@ -32,14 +32,14 @@ public class ScoringService
 
         int overall =
             (int)(skillsScore * 0.5 +
-                  missingPenalty * 0.2 +
+                  experienceScore * 0.2 +
                   keywordScore * 0.15 +
                   qualityScore * 0.15);
 
         return (overall, new ScoreBreakdown
         {
             SkillsScore = skillsScore,
-            MissingPenalty = missingPenalty,
+            ExperienceScore = experienceScore,
             KeywordScore = keywordScore,
             QualityScore = qualityScore
         });

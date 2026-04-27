@@ -74,6 +74,29 @@ public class AnalysisService : IAnalysisService
             };
         }
 
+        int matchCount = result.SkillsMatch.Count;
+        int missingCount = result.MissingSkills.Count;
+        int total = matchCount + missingCount;
+
+        result.Breakdown.SkillsScore =
+            total == 0 ? 0 : (int)((double)matchCount / total * 100);
+
+        result.Breakdown.KeywordScore = result.Breakdown.SkillsScore;
+
+        result.Breakdown.ExperienceScore =
+            request.ResumeContent.Length > 300 ? 70 : 40;
+
+        result.Breakdown.QualityScore =
+            result.Suggestions.Count > 3 ? 60 : 80;
+
+        result.Breakdown.OverallScore =
+            (int)(
+                result.Breakdown.SkillsScore * 0.4 +
+                result.Breakdown.ExperienceScore * 0.2 +
+                result.Breakdown.KeywordScore * 0.2 +
+                result.Breakdown.QualityScore * 0.2
+            );
+
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
         return result;
