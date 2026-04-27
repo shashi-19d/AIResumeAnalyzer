@@ -21,21 +21,13 @@ function App() {
   };
 
   // 🔥 Score Calculation
-  const calculateScore = (match = [], missing = []) => {
-    const total = match.length + missing.length;
-    if (total === 0) return 0;
-    return Math.round((match.length / total) * 100);
-  };
-
   const getScoreColor = (score) => {
-    if (score > 75) return "text-green-400";
-    if (score > 50) return "text-yellow-400";
+    if (score >= 80) return "text-green-400";
+    if (score >= 60) return "text-yellow-400";
     return "text-red-400";
   };
 
-  const score = result
-    ? calculateScore(result.skillsMatch, result.missingSkills)
-    : 0;
+  const score = result?.breakdown?.overallScore || 0;
 
   // 🚀 ANALYZE API
   const analyze = async () => {
@@ -165,7 +157,7 @@ function App() {
           className="w-full h-32 p-4 mb-6 rounded-lg bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
 
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs text-gray-400 mt-1 mb-12">
           💡 Paste job description from LinkedIn or company site — we clean it automatically
         </p>
 
@@ -221,12 +213,12 @@ function App() {
                   </defs>
                 </svg>
 
-                <div className={`absolute inset-0 flex items-center justify-center text-2xl font-bold ${getScoreColor(score)}`}>
+                <div className={`absolute inset-0 flex items-center justify-center text-3xl font-bold ${getScoreColor(score)} animate-pulse`}>
                   {score}%
                 </div>
               </div>
 
-              <p className="text-gray-400 mt-2">Match Score</p>
+              <p className="text-gray-400 mt-2"> Relevancy 🎯 </p>
             </div>
 
             {/* Skills Match */}
@@ -251,6 +243,29 @@ function App() {
                   </span>
                 ))}
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+
+              <div className="bg-white/10 p-4 rounded-xl text-center">
+                <p className="text-gray-400 text-sm">Skills</p>
+                <p className="text-lg font-bold">{result?.breakdown?.skillsScore}%</p>
+              </div>
+
+              <div className="bg-white/10 p-4 rounded-xl text-center">
+                <p className="text-gray-400 text-sm">Experience</p>
+                <p className="text-lg font-bold">{result?.breakdown.experienceScore}%</p>
+              </div>
+
+              <div className="bg-white/10 p-4 rounded-xl text-center">
+                <p className="text-gray-400 text-sm">Keyword</p>
+                <p className="text-lg font-bold">{result?.breakdown.keywordScore}%</p>
+              </div>
+
+              <div className="bg-white/10 p-4 rounded-xl text-center">
+                <p className="text-gray-400 text-sm">Quality</p>
+                <p className="text-lg font-bold">{result?.breakdown.qualityScore}%</p>
+              </div>
+
             </div>
 
             {/* Suggestions */}
