@@ -20,5 +20,9 @@ public class AnalysisResultDto
         public int ExperienceScore { get; set; }
         public int KeywordScore { get; set; }
         public int QualityScore { get; set; }
+
+        public string Verdict { get; set; } = string.Empty;
+
+        public List<string> Insights { get; set; } = new();
     }
 }

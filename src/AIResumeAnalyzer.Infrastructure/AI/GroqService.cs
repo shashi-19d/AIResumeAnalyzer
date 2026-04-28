@@ -98,7 +98,6 @@ public class GroqService : IAIService
         {
             var json = text.Substring(start, end - start + 1);
 
-            // Remove markdown if present
             json = json.Replace("```json", "")
                        .Replace("```", "")
                        .Trim();
