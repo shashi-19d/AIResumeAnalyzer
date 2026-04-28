@@ -268,6 +268,19 @@ function App() {
 
             </div>
 
+            <h2 className="text-xl text-center mt-4">
+              {result?.breakdown?.verdict}
+            </h2>
+
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">📊 Insights</h3>
+              <ul className="list-disc ml-6 text-gray-300">
+                {result?.breakdown?.insights?.map((i, idx) => (
+                  <li key={idx}>{i}</li>
+                ))}
+              </ul>
+            </div>
+
             {/* Suggestions */}
             <div>
               <h2 className="text-xl font-semibold mb-2">💡 Suggestions</h2>
