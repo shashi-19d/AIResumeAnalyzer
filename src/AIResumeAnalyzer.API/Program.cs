@@ -26,6 +26,8 @@ builder.Services.AddScoped<ResumeParserService>();
 
 builder.Services.AddScoped<ScoringService>();
 
+builder.Services.AddScoped<SkillWeightService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",

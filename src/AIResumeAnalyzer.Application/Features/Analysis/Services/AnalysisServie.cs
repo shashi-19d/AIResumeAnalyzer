@@ -1,6 +1,7 @@
 ﻿using AIResumeAnalyzer.Domain.Entities;
-using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
+using static AnalysisResultDto;
 
 namespace AIResumeAnalyzer.Application.Features.Analysis.Services;
 
@@ -9,14 +10,20 @@ public class AnalysisService : IAnalysisService
     private readonly IAnalysisRepository _repository;
     private readonly IAIService _aiService;
     private readonly IMemoryCache _cache;
-    private readonly ScoringService _scoringService;
+    private readonly SkillWeightService _skillService;
+    private readonly KeywordScoreService _keywordService;
+    private readonly ExperienceScoreService _experienceService;
+    private readonly VerdictService _verdictService;
 
-    public AnalysisService(IAnalysisRepository repository, IAIService aiService, IMemoryCache cache, ScoringService scoringService)
+    public AnalysisService(IAnalysisRepository repository, IAIService aiService, IMemoryCache cache)
     {
         _repository = repository;
         _aiService = aiService;
         _cache = cache;
-        _scoringService = scoringService;
+        _skillService = new SkillWeightService();
+        _keywordService = new KeywordScoreService();
+        _experienceService = new ExperienceScoreService();
+        _verdictService = new VerdictService();
     }
 
     public async Task<AnalysisResultDto> AnalyzeAsync(AnalyzeRequestDto request)
@@ -74,28 +81,44 @@ public class AnalysisService : IAnalysisService
             };
         }
 
-        int matchCount = result.SkillsMatch.Count;
-        int missingCount = result.MissingSkills.Count;
-        int total = matchCount + missingCount;
+        // 🔥 ADVANCED SCORING
 
-        result.Breakdown.SkillsScore =
-            total == 0 ? 0 : (int)((double)matchCount / total * 100);
+        var (skillsScore, skillInsights) =
+            _skillService.Calculate(result.SkillsMatch, result.MissingSkills);
 
-        result.Breakdown.KeywordScore = result.Breakdown.SkillsScore;
+        var (keywordScore, keywordInsights) =
+            _keywordService.Calculate(request.ResumeContent, result.SkillsMatch.Concat(result.MissingSkills).ToList());
 
-        result.Breakdown.ExperienceScore =
-            request.ResumeContent.Length > 300 ? 70 : 40;
+        var (experienceScore, expInsights) =
+            _experienceService.Calculate(request.ResumeContent, request.JobDescriptionContent);
 
-        result.Breakdown.QualityScore =
-            result.Suggestions.Count > 3 ? 60 : 80;
+        // simple quality heuristic
+        int qualityScore = request.ResumeContent.Length > 500 ? 80 : 50;
 
-        result.Breakdown.OverallScore =
-            (int)(
-                result.Breakdown.SkillsScore * 0.4 +
-                result.Breakdown.ExperienceScore * 0.2 +
-                result.Breakdown.KeywordScore * 0.2 +
-                result.Breakdown.QualityScore * 0.2
-            );
+        // weighted final score
+        int overall =
+            (int)(skillsScore * 0.4 +
+                  keywordScore * 0.2 +
+                  experienceScore * 0.2 +
+                  qualityScore * 0.2);
+
+        // verdict
+        string verdict = _verdictService.GetVerdict(overall);
+
+        // attach
+        result.Breakdown = new ScoreBreakdown
+        {
+            OverallScore = overall,
+            SkillsScore = skillsScore,
+            KeywordScore = keywordScore,
+            ExperienceScore = experienceScore,
+            QualityScore = qualityScore,
+            Verdict = verdict,
+            Insights = skillInsights
+                .Concat(keywordInsights)
+                .Concat(expInsights)
+                .ToList()
+        };
 
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(10));
 
